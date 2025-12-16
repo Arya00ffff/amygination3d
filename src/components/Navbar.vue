@@ -39,7 +39,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { openCart } from '../services/payhipService'
+
 
 const mobileMenuOpen = ref(false)
 

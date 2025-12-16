@@ -1,120 +1,153 @@
-<template>
-  <div v-if="avatar" class="product-page">
-    <button class="back-btn" @click="router.push('/')">← Back to Shop</button>
+<script setup>
+import { ref, onMounted, nextTick, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import { loadPayhip } from '../components/payhipService';
+import '../assets/styles.css'
+
+// 🔴 Product Data Array
+const products = ref([
+  { 
+    id: 'BmzcI', 
+    name: 'Scratch 3D Model', 
+    price: 10.00,
+    image: 'https://payhip.com/cdn-cgi/image/format=auto,width=1500/https://pe56d.s3.amazonaws.com/o_1ialoodue1gis16pa9dfbibcidr.png',
+    category: '3D Model',
+    rating: 4.8,
+    reviews: 24,
+    description: 'The original Scratch design.'
+  },
+]);
+
+const isLoading = ref(false);
+const isInitialized = ref(false);
+const route = useRoute();
+
+// Watch for route changes and reinitialize ONLY if not already initialized
+watch(() => route.path, async () => {
+  if (!isInitialized.value) {
+    await initializePayhip();
+  }
+});
+
+onMounted(async () => {
+  await initializePayhip();
+});
+
+const initializePayhip = async () => {
+  // Don't reinitialize if already done
+  if (isInitialized.value) {
+    console.log('⚠️ Payhip already initialized, skipping...');
+    return;
+  }
+
+  try {
+    isLoading.value = true;
+
+    // Load Payhip script
+    await loadPayhip();
+
+    // Wait for Vue to render the hidden links
+    await nextTick();
+
+    // Give a moment for DOM to settle
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Run Payhip's full Setup to ensure all handlers are attached
+    if (window.Payhip?.Setup && typeof window.Payhip.Setup === 'function') {
+      window.Payhip.Setup();
+      console.log('✅ Payhip Setup called');
+    } else if (window.Payhip?.Button?.initiateBuyButtons) {
+      // Fallback to just initializing buy buttons
+      window.Payhip.Button.initiateBuyButtons();
+      console.log('✅ Payhip buy buttons initialized');
+    }
     
-    <div class="product-container">
-      <div class="product-left">
-        <img :src="avatar.image" :alt="avatar.name" class="product-image" />
-      </div>
-      
-      <div class="product-right">
-        <h1 class="product-title">{{ avatar.name }}</h1>
-        <div class="product-rating">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="#ffd700" stroke="#ffd700" stroke-width="2">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-          </svg>
-          <span class="product-rating-text">{{ avatar.rating }} ({{ avatar.reviews }} reviews)</span>
+    isInitialized.value = true;
+
+  } catch (error) {
+    console.error('❌ Payhip init failed:', error);
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+/**
+ * Triggers the hidden Payhip link for the specific product ID.
+ */
+const triggerPayhip = (productId) => {
+  const link = document.querySelector(`.payhip-trigger-${productId}`);
+
+  if (!link) {
+    console.error(`❌ Payhip link for ${productId} not found`);
+    return;
+  }
+
+  console.log('🔵 Triggering Payhip for:', productId);
+  
+  // Just click - don't reinitialize
+  link.click();
+};
+
+/**
+ * Opens the Payhip Cart Modal/Overlay.
+ */
+const goToCheckout = () => {
+  const cartBtn = document.querySelector('.payhip-cart-button');
+  if (cartBtn) {
+    cartBtn.click();
+  } else {
+    alert("Payhip Cart not visible. Try adding an item first.");
+  }
+};
+</script>
+
+<template>
+  <div class="store-container">
+    <h2>Available 3D Models</h2>
+    
+    <div v-if="isLoading" style="text-align: center; padding: 40px;">
+      <p>Loading payment system...</p>
+    </div>
+
+    <div v-else class="avatar-grid">
+      <div v-for="product in products" :key="product.id" class="avatar-card">
+        <div class="avatar-image-container">
+          <img :src="product.image" :alt="product.name" class="avatar-image" />
+          <div class="avatar-category">{{ product.category }}</div>
         </div>
-        
-        <p class="product-description">{{ avatar.description }}</p>
-        
-        <div class="product-features">
-          <h3 class="features-title">Features:</h3>
-          <ul class="features-list">
-            <li v-for="(feature, idx) in avatar.features" :key="idx" class="feature-item">
-              ✓ {{ feature }}
-            </li>
-          </ul>
-        </div>
-        
-        <div class="product-price">${{ avatar.price }}</div>
-        
-        <div class="product-actions">
-          <!-- ✅ Changed to Payhip integration -->
-          <button 
-            class="add-to-cart-btn" 
-            @click="triggerPayhip"
-            :disabled="isLoading"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="9" cy="21" r="1"></circle>
-              <circle cx="20" cy="21" r="1"></circle>
-              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+        <div class="avatar-info">
+          <h3 class="avatar-name">{{ product.name }}</h3>
+          <div class="rating-container">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#ffd700" stroke="#ffd700" stroke-width="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
             </svg>
-            {{ isLoading ? 'Adding...' : 'Add to Cart' }}
-          </button>
-          <button class="favorite-product-btn" @click="toggleFavorite">
-            <svg width="20" height="20" viewBox="0 0 24 24" :fill="isFavorite ? '#ff4757' : 'none'" :stroke="isFavorite ? '#ff4757' : '#fff'" stroke-width="2">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-            </svg>
-          </button>
+            <span class="rating">{{ product.rating }}</span>
+            <span class="reviews">({{ product.reviews }})</span>
+          </div>
+          <div class="avatar-footer">
+            <span class="price">${{ product.price }}</span>
+            <button 
+              class="view-btn" 
+              @click="triggerPayhip(product.id)"
+            >
+              View Details
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- ✅ Hidden Payhip trigger link -->
+    <!-- Hidden Payhip trigger links -->
     <a 
-      :class="['payhip-buy-button', `payhip-trigger-${avatar.payhipId}`]"
-      :href="`https://payhip.com/b/${avatar.payhipId}`" 
-      data-theme="none" 
-      :data-product="avatar.payhipId" 
+      v-for="product in products"
+      :key="`payhip-${product.id}`"
+      :class="['payhip-buy-button', `payhip-trigger-${product.id}`]"
+      :href="`https://payhip.com/b/${product.id}`"
+      data-theme="none"
+      :data-product="product.id"
       style="display: none;"
-      aria-hidden="true"
     >
-      Payhip Trigger Link
+      Buy {{ product.name }}
     </a>
   </div>
 </template>
-
-<script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useFavoritesStore } from '../stores/favoritesStore'
-import { avatarsData } from '../data/avatars'
-import { loadPayhip } from '../services/payhipService'
-
-const route = useRoute()
-const router = useRouter()
-const favoritesStore = useFavoritesStore()
-
-const avatarId = parseInt(route.params.id)
-const avatar = avatarsData.find(a => a.id === avatarId)
-
-const isLoading = ref(false)
-
-const isFavorite = computed(() => favoritesStore.isFavorite(avatarId))
-
-const toggleFavorite = () => {
-  favoritesStore.toggle(avatarId)
-}
-
-// ✅ Load Payhip on component mount
-onMounted(async () => {
-  try {
-    await loadPayhip()
-    console.log('✅ Payhip script loaded successfully.')
-  } catch (error) {
-    console.error('❌ Failed to load Payhip script:', error)
-  }
-})
-
-// ✅ Trigger Payhip purchase flow
-const triggerPayhip = () => {
-  if (isLoading.value || !avatar.payhipId) return
-
-  const link = document.querySelector(`.payhip-trigger-${avatar.payhipId}`)
-
-  if (link) {
-    link.click()
-    
-    isLoading.value = true
-    
-    setTimeout(() => {
-      isLoading.value = false
-      console.log(`🛒 Product ${avatar.payhipId} added. Overlay should appear.`)
-    }, 500)
-  } else {
-    console.error(`Payhip link for product ${avatar.payhipId} not found.`)
-  }
-}
-</script>
