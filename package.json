@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "deploy": "gh-pages -d dist",
     "preview": "vite preview",
     "format": "prettier --write --experimental-cli src/"
   },
@@ -18,6 +19,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.2",
+    "gh-pages": "^6.3.0",
     "prettier": "3.6.2",
     "vite": "^7.2.4",
     "vite-plugin-vue-devtools": "^8.0.5"
