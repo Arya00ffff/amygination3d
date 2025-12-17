@@ -7,7 +7,7 @@
           <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
         </svg>
       </button>
-      <div class="avatar-category">{{ avatar.category }}</div>
+     
     </div>
     <div class="avatar-info">
       <h3 class="avatar-name">{{ avatar.name }}</h3>
@@ -29,9 +29,9 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+
 import { useRouter } from 'vue-router'
-import { useFavoritesStore } from '../stores/favoritesStore'
+
 
 const props = defineProps({
   avatar: {
@@ -41,13 +41,7 @@ const props = defineProps({
 })
 
 const router = useRouter()
-const favoritesStore = useFavoritesStore()
 
-const isFavorite = computed(() => favoritesStore.isFavorite(props.avatar.id))
-
-const toggleFavorite = () => {
-  favoritesStore.toggle(props.avatar.id)
-}
 
 const viewProduct = () => {
   router.push(`/product/${props.avatar.id}`)

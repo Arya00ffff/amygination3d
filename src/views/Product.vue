@@ -11,7 +11,6 @@ const products = ref([
     name: 'Scratch 3D Model', 
     price: 10.00,
     image: 'https://payhip.com/cdn-cgi/image/format=auto,width=1500/https://pe56d.s3.amazonaws.com/o_1ialoodue1gis16pa9dfbibcidr.png',
-    category: '3D Model',
     rating: 4.8,
     reviews: 24,
     description: 'The original Scratch design.'
@@ -113,7 +112,6 @@ const goToCheckout = () => {
       <div v-for="product in products" :key="product.id" class="avatar-card">
         <div class="avatar-image-container">
           <img :src="product.image" :alt="product.name" class="avatar-image" />
-          <div class="avatar-category">{{ product.category }}</div>
         </div>
         <div class="avatar-info">
           <h3 class="avatar-name">{{ product.name }}</h3>

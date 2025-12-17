@@ -1,50 +1,47 @@
 <template>
   <div>
-    
-    <section class="hero">
-     <ContentArea/>
-    </section>
-    <SearchBar v-model="searchQuery" />
-    <br><br>
-    <CategoryFilter v-model="selectedCategory" :categories="categories" />
+    <Hero />
 
-    <section class="avatar-grid">
-      <AvatarCard 
-        v-for="avatar in filteredAvatars" 
-        :key="avatar.id" 
-        :avatar="avatar"
-      />
+    <section class="hero">
+      <SplashCard />
     </section>
+
+    <SearchBar v-model="searchQuery" />
+
+    <section class="avatars-section">
+      <h2>Browse Avatars</h2>
+      <div class="avatar-grid">
+        <AvatarCard
+          v-for="avatar in filteredAvatars"
+          :key="avatar.id"
+          :avatar="avatar"
+        />
+      </div>
+    </section>
+
   </div>
 
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
+import Hero from '../components/Hero.vue'
+import SplashCard from '../components/SplashCard.vue'
 import AvatarCard from '../components/AvatarCard.vue'
 import SearchBar from '../components/SearchBar.vue'
-import CategoryFilter from '../components/CategoryFilter.vue'
-import { avatarsData } from '../data/avatars'
-import ContentArea from '../components/ContentArea.vue'
+import { avatarsData } from '../data/avatars.js'
 
 const searchQuery = ref('')
-const selectedCategory = ref('All')
-const categories = ['All', 'Anime', 'Kemono', 'Fantasy', 'Sci-Fi', 'Cute', 'Horror']
 
 const filteredAvatars = computed(() => {
-  let filtered = avatarsData
-  
-  if (selectedCategory.value !== 'All') {
-    filtered = filtered.filter(a => a.category === selectedCategory.value)
-  }
-  
-  if (searchQuery.value) {
-    filtered = filtered.filter(a => 
-      a.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      a.category.toLowerCase().includes(searchQuery.value.toLowerCase())
+  const q = searchQuery.value.trim().toLowerCase()
+  if (!q) return avatarsData
+  return avatarsData.filter(a => {
+    return (
+      (a.name && a.name.toLowerCase().includes(q)) ||
+      (a.category && a.category.toLowerCase().includes(q)) ||
+      (a.description && a.description.toLowerCase().includes(q))
     )
-  }
-  
-  return filtered
+  })
 })
 </script>
