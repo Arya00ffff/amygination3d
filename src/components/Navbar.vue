@@ -2,12 +2,14 @@
   <nav class="nav">
     <div class="nav-container">
       <router-link to="/" class="logo">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-          <polyline points="7 10 12 15 17 10"></polyline>
-          <line x1="12" y1="15" x2="12" y2="3"></line>
-        </svg>
-        <span class="logo-text">VRShop</span>
+        <img
+          src="https://payhip.com/cdn-cgi/image/format=auto,width=500/https://pe56d.s3.amazonaws.com/o_1hsqldr3ahtqqfl1hmb1es1aa1p.png"
+          alt="VRShop logo"
+          class="logo-img"
+          width="48"
+          height="48"
+        />
+        <span class="logo-text">amygination</span>
       </router-link>
       
       <div :class="['nav-links', { 'mobile-open': mobileMenuOpen }]">
