@@ -1,88 +1,45 @@
-// src/services/payhipService.js
-
+// payhipService.js
 let payhipLoaded = false;
 let payhipPromise = null;
 
 export function loadPayhip() {
-  if (payhipLoaded && window.Payhip) {
-    return Promise.resolve();
-  }
-
-  if (payhipPromise) {
-    return payhipPromise;
-  }
-
-  const existingScript = document.querySelector('script[src="https://payhip.com/payhip.js"]');
-  
-  if (existingScript && window.Payhip) {
-    payhipLoaded = true;
-    return Promise.resolve();
-  }
+  if (payhipLoaded && window.Payhip) return Promise.resolve();
+  if (payhipPromise) return payhipPromise;
 
   payhipPromise = new Promise((resolve, reject) => {
-    if (existingScript) {
-      const checkInterval = setInterval(() => {
-        if (window.Payhip) {
-          clearInterval(checkInterval);
-          payhipLoaded = true;
-          payhipPromise = null;
-          resolve();
-        }
-      }, 100);
-
-      setTimeout(() => {
-        clearInterval(checkInterval);
-        payhipPromise = null;
-        resolve();
-      }, 10000);
-      return;
-    }
-
     const script = document.createElement('script');
     script.src = 'https://payhip.com/payhip.js';
     script.async = true;
-
     script.onload = () => {
-      const checkInterval = setInterval(() => {
-        if (window.Payhip) {
-          clearInterval(checkInterval);
-          payhipLoaded = true;
-          payhipPromise = null;
-          
-          // IMPORTANT: Ensure Payhip's Setup has run
-          if (typeof window.Payhip.Setup === 'function') {
-            // Payhip.Setup() runs automatically when the script loads,
-            // but we ensure it's been called
-            console.log('✅ Payhip ready and Setup complete');
-          }
-          
-          resolve();
-        }
-      }, 100);
-
-      setTimeout(() => {
-        clearInterval(checkInterval);
-        payhipPromise = null;
-        resolve();
-      }, 10000);
+      payhipLoaded = true;
+      resolve();
     };
-
-    script.onerror = (error) => {
-      payhipPromise = null;
-      reject(error);
-    };
-
+    script.onerror = reject;
     document.head.appendChild(script);
   });
 
   return payhipPromise;
 }
 
-export const openCart = () => {
-  const cartBtn = document.querySelector('.payhip-cart-button');
-  if (cartBtn) {
-    cartBtn.click();
-  } else {
-    console.warn("Payhip cart button not found.");
+/**
+ * The direct way to open Payhip without needing hidden <a> tags.
+ */
+export async function openPayhipCheckout(productId) {
+  if (!window.Payhip) {
+    await loadPayhip();
   }
-};
+
+  // Use the official Payhip API directly
+  if (window.Payhip && window.Payhip.Checkout) {
+    window.Payhip.Checkout.open({
+      product: productId,
+      type: 'direct' // or 'product' 
+    });
+  } else {
+    // Fallback if the library script didn't initialize the Checkout object
+    console.warn('⚠️ Payhip API not ready, using fallback redirect');
+    window.location.href = `https://amygination3d.com/b/${productId}`;
+  }
+}
+
+
